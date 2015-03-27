@@ -84,4 +84,5 @@ private:
 	vector<AsmCommand> assemble(string code, vector<Symbol> table);
 	command createMcode(Instruction inst, string args, vector<Symbol> table);
 	unsigned int getRegNumber(string reg);
+	unsigned int getLables(string label, vector<Symbol> table);
 };

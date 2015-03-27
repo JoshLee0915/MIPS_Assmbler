@@ -152,12 +152,14 @@ vector<AsmCommand> AssemblerMIPS::assemble(string code, vector<Symbol> table)
 
 command AssemblerMIPS::createMcode(Instruction inst, string args, vector<Symbol> table)
 {
+	int addr;
 	command cmd;
 	stringstream argsStream;
 
 	string rs;
 	string rt;
 	string rd;
+	string label;
 
 	argsStream.str(args);
 
@@ -182,6 +184,15 @@ command AssemblerMIPS::createMcode(Instruction inst, string args, vector<Symbol>
 		cmd.rType.rd = getRegNumber(rd);
 		break;
 	case jType:
+		// shift the mem address >> by 2 then store it
+		addr = 0;
+		// check if a number was entered
+		if(!(argsStream >> addr))
+			// if it fails it must be a label
+			addr = getLables(args, table);
+
+		// store the addr defults to 0 on invalid input
+		cmd.jType.address = addr >> 2;
 		break;
 	case iType:
 		break;
@@ -193,11 +204,22 @@ command AssemblerMIPS::createMcode(Instruction inst, string args, vector<Symbol>
 
 unsigned int AssemblerMIPS::getRegNumber(string reg)
 {
-	for(unsigned int index = 0; index < 32; index++)
+	for(unsigned int index = 0; index < 32 && !reg.empty(); index++)
 	{
 		if(reg == REG_LIST[index].symbolName)
 			return REG_LIST[index].value;		// return the reg number
 	}
 
-	return ~0;	// invalid reg
+	return 0;	// default to zero for no or invalid
+}
+
+unsigned int AssemblerMIPS::getLables(string label, vector<Symbol> table)
+{
+	for(unsigned int index=0; index < table.size(); index++)
+	{
+		if(label == table[index].symbolName)
+			return table[index].value;
+	}
+
+	return 0; // default to zero for invalid
 }
