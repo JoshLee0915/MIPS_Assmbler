@@ -1,0 +1,20 @@
+Symbol Table:
+Label		Address (in hex)
+begin		0x00400000
+loop		0x00400018
+outside		0x0040002C
+
+MIPS code					Address		Machine Lang.
+		.text
+begin:		add	$t0, $s0, $zero		0x00400000	0x02004020
+		add	$t1, $s1, $zero		0x00400004	0x02204820
+		add 	$t1, $t1, $t1		0x00400008	0x01294820
+		add	$t1, $t1, $t1		0x0040000C	0x01294820
+		add	$t1, $t1, $s0		0x00400010	0x01304820
+		add	$t3, $zero, $zero		0x00400014	0x00005820
+loop:		lw	$t2, 0($t0)		0x00400018	0x8D0A0000
+		add	$t3, $t3, $t2		0x0040001C	0x016A5820
+		addi	$t0, $t0, 4		0x00400020	0x21080004
+		slt	$t4, $t0, $t1		0x00400024	0x0109602A
+		bne	$t4, $zero, loop		0x00400028	0x1580FFFB
+outside:		sw	$t3, 0($s2)		0x0040002C	0xAE4B0000

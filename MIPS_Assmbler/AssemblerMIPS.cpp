@@ -55,8 +55,8 @@ string AssemblerMIPS::assembleCode(string fileContent)
 	{
 		getline(cleanedCode, line); //get the next line of the code
 		output << line << "0x" << uppercase	<< setfill('0') << setw(8) 
-			<< hex << asmCode[index].addr << "\t0x" << asmCode[index].cmd.cmd 
-			<< "\n";
+			<< hex << asmCode[index].addr << "\t0x" << uppercase << setfill('0') 
+			<< setw(8) << hex<< asmCode[index].cmd.cmd << "\n";
 	}
 	return output.str();
 }
