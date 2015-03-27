@@ -15,26 +15,11 @@ using namespace std;
 
 int main()
 {
-	command c;
-	c.rType.opcode = 0;
-	c.rType.rs = 16;
-	c.rType.rt = 0;
-	c.rType.rd = 8;
-	c.rType.shamt = 0;
-	c.rType.func = 0x20;
-	printf("%#010x\n", c);
-
-	string tmp;
-	string line;
 	string file = "test.txt";
 	FileIO* flIO = new FileIO();
 	flIO->openFile(file);
-	tmp = flIO->loadTxtFile();
-	AssemblerMIPS test(tmp);
-	cout << tmp << "\n\n";
+	AssemblerMIPS test(flIO->loadTxtFile());
 	cout << test.assembleCode();
-	flIO->writeTextFile("test2.txt", tmp);
 	delete flIO;
-	getline(cin, tmp);
 	return 0;
 }

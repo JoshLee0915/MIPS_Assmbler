@@ -30,14 +30,35 @@ string AssemblerMIPS::assembleCode()
 
 string AssemblerMIPS::assembleCode(string fileContent)
 {
+	string line;
+	stringstream cleanedCode;
+	stringstream output;
 	vector<Symbol> symTable;
+	vector<AsmCommand> asmCode;
 	// clean up the code before starting the assembling
 	string modFile = removeComments(fileContent);
 	symTable = buildSymbolTable(modFile);
+	cleanedCode.str(modFile);	// save for dispay
 	modFile = removeLables(modFile, symTable);
-	assemble(modFile, symTable);
+	asmCode = assemble(modFile, symTable);
 
-	return modFile;
+	// format the symbol table
+	output << "Symbol Table:\nLabel\t\tAddress (in hex)\n";
+	for(unsigned int index = 0; index < symTable.size(); index++)
+		output << symTable[index].symbolName << "\t\t0x" << uppercase 
+			<< setfill('0') << setw(8) << hex << symTable[index].value << "\n";
+
+	// format the code
+	getline(cleanedCode, line);
+	output << "\nMIPS code\t\t\t\t\tAddress\t\tMachine Lang.\n" << line << "\n";
+	for(unsigned int index = 0; index < asmCode.size(); index++)
+	{
+		getline(cleanedCode, line); //get the next line of the code
+		output << line << "0x" << uppercase	<< setfill('0') << setw(8) 
+			<< hex << asmCode[index].addr << "\t0x" << asmCode[index].cmd.cmd 
+			<< "\n";
+	}
+	return output.str();
 }
 
 string AssemblerMIPS::removeComments(string code)
@@ -138,9 +159,9 @@ vector<AsmCommand> AssemblerMIPS::assemble(string code, vector<Symbol> table)
 			if(instruction == INSTR_LIST[index].instruction)
 			{
 				AsmCommand mCode;
-				mCode.cmd = createMcode(INSTR_LIST[index], args, table);	// store the mCode
-				mCode.addr = addr;											// store the address
-				cmds.push_back(mCode);				
+				mCode.cmd = createMcode(INSTR_LIST[index], args, table, addr);	// store the mCode
+				mCode.addr = addr;												// store the address
+				cmds.push_back(mCode);	
 				addr += 4;
 				break;	// stop
 			}
@@ -150,9 +171,9 @@ vector<AsmCommand> AssemblerMIPS::assemble(string code, vector<Symbol> table)
 	return cmds;
 }
 
-command AssemblerMIPS::createMcode(Instruction inst, string args, vector<Symbol> table)
+command AssemblerMIPS::createMcode(Instruction inst, string args, vector<Symbol> table, int addr)
 {
-	int addr;
+	int imm;
 	command cmd;
 	stringstream argsStream;
 
@@ -185,19 +206,68 @@ command AssemblerMIPS::createMcode(Instruction inst, string args, vector<Symbol>
 		break;
 	case jType:
 		// shift the mem address >> by 2 then store it
-		addr = 0;
+		imm = 0;
 		// check if a number was entered
-		if(!(argsStream >> addr))
+		if(!(argsStream >> imm))
 			// if it fails it must be a label
-			addr = getLables(args, table);
+			imm = getLables(args, table);
 
 		// store the addr defults to 0 on invalid input
-		cmd.jType.address = addr >> 2;
+		cmd.jType.address = imm >> 2;
 		break;
 	case iType:
+		imm = 0;
+		// get the first reg from the args
+		getline(argsStream, rs, ',');
+		// check for a loadword or storeword
+		if(inst.instruction == "lw" || inst.instruction == "sw")
+		{
+			// swap rs and rt
+			rt = rs;
+			// get the offset
+			argsStream >> imm;
+			// get the next reg
+			argsStream >> rs;
+			// trim the prens
+			rs.erase(0,1);
+			rs.erase(rs.find_first_of(')'));
+		}
+		//check for a branch
+		else if(inst.instruction == "bne" || inst.instruction == "beq")
+		{
+			// get the next reg
+			getline(argsStream, rt, ',');
+
+			// get the address
+			getline(argsStream, args, ',');
+			argsStream.clear();
+			argsStream.str(args);
+
+			// check if a number was entered
+			if(!(argsStream >> imm))
+				// if it fails it must be a label
+				imm = getLables(args, table);
+
+			// calculate the offset
+			imm = (imm - (addr+4)) >> 2;
+		}
+		// all other iTypes
+		else
+		{
+			// get the next reg
+			getline(argsStream, rt, ',');
+			// get the immediate value
+			argsStream >> imm;
+		}
+
+		// store the regs
+		cmd.iType.rs = getRegNumber(rs);
+		cmd.iType.rt = getRegNumber(rt);
+
+		// set the immediate value
+		cmd.iType.imm = imm;
 		break;
 	}
-	printf("%#010x\n", cmd);
 
 	return cmd;
 }

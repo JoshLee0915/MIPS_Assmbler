@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+#include <iomanip>
 #include <string>
 #include <cstddef>
 #include <sstream>
@@ -82,7 +82,7 @@ private:
 	vector<Symbol> buildSymbolTable(string code);
 	string removeLables(string code, vector<Symbol> table);
 	vector<AsmCommand> assemble(string code, vector<Symbol> table);
-	command createMcode(Instruction inst, string args, vector<Symbol> table);
+	command createMcode(Instruction inst, string args, vector<Symbol> table, int addr);
 	unsigned int getRegNumber(string reg);
 	unsigned int getLables(string label, vector<Symbol> table);
 };
