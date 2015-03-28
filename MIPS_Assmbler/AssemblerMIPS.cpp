@@ -104,7 +104,7 @@ vector<Symbol> AssemblerMIPS::buildSymbolTable(string code)
 		size_t start = line.find_first_of(':');
 
 		// check if there is a lable if there is one add it
-		if(start!=string.npos)
+		if(start!=string::npos)
 		{
 			tmpSymbol.symbolName = line.substr(0,start);
 			tmpSymbol.value = addr;
