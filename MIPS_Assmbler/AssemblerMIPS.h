@@ -15,6 +15,7 @@ enum instructType
 	iType,
 	jType,
 };
+
 union command
 {
 	struct 
@@ -33,13 +34,13 @@ union command
 		unsigned rt : 5;
 		unsigned rs : 5;
 		unsigned opcode : 6;
-	}iType;
+	} iType;
 
 	struct
 	{
 		unsigned address : 26;
 		unsigned opcode : 6;
-	}jType;
+	} jType;
 
 	unsigned int cmd;
 };
